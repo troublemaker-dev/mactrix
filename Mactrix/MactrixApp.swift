@@ -11,7 +11,7 @@ import SwiftUI
 struct MactrixApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
-        }
+            MainView()
+        }.windowToolbarStyle(.unifiedCompact)
     }
 }
