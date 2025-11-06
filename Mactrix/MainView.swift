@@ -1,6 +1,5 @@
 import SwiftUI
-
-
+import MatrixRustSDK
 
 struct RoomIcon: View {
     var body: some View {
@@ -14,32 +13,37 @@ struct MainView: View {
     @Environment(AppState.self) var appState
     
     @State private var showWelcomeSheet: Bool = false
+    @State private var inspectorVisible: Bool = false
     @State private var selectedCategory: SelectedCategory = .defaultCategory
+    @State private var selectedRoomId: String? = nil
+    
+    var selectedRoom: Room? {
+        guard let roomId = selectedRoomId else { return nil}
+        return appState.matrixClient?.rooms.first(where: { $0.id() == roomId })
+    }
+    
+    @ViewBuilder var details: some View {
+        if let room = selectedRoom {
+            ChatView(room: room).id(room.id)
+        } else {
+            ContentUnavailableView("Select a room", systemImage: "message.fill")
+        }
+    }
     
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
-            SidebarSpacesView(selectedCategory: $selectedCategory)
-            
-            NavigationSplitView {
-                SidebarChannelView(selectedCategory: selectedCategory)
-            } detail: {
-                ContentUnavailableView("Select a room", systemImage: "message.fill")
+        NavigationSplitView(
+            sidebar: { SidebarChannelView(selectedCategory: selectedCategory, selectedRoomId: $selectedRoomId) },
+            detail: { details }
+        )
+        .inspector(isPresented: $inspectorVisible, content: {
+            if let room = selectedRoom {
+                RoomInspectorView(room: room, inspectorVisible: $inspectorVisible)
+            } else {
+                Text("No room selected")
             }
-            .background(Color(NSColor.controlBackgroundColor))
-            .toolbarColorScheme(.light, for: .windowToolbar)
-            .toolbar(removing: .title)
-        }
+        })
         .task { await attemptLoadUserSession() }
-        .sheet(isPresented: $showWelcomeSheet, onDismiss: {
-            Task {
-                try await Task.sleep(for: .milliseconds(100))
-                if let matrixClient = appState.matrixClient {
-                    onMatrixLoaded(matrixClient: matrixClient)
-                } else {
-                    NSApp.terminate(nil)
-                }
-            }
-        }) {
+        .sheet(isPresented: $showWelcomeSheet, onDismiss: onLoginModalDismiss ) {
             WelcomeSheetView()
         }
         .onChange(of: appState.matrixClient == nil) { _, matrixClientIsNil in
@@ -68,6 +72,17 @@ struct MainView: View {
     func onMatrixLoaded(matrixClient: MatrixClient) {
         Task {
             try await matrixClient.startSync()
+        }
+    }
+    
+    func onLoginModalDismiss() {
+        Task {
+            try await Task.sleep(for: .milliseconds(100))
+            if let matrixClient = appState.matrixClient {
+                onMatrixLoaded(matrixClient: matrixClient)
+            } else {
+                NSApp.terminate(nil)
+            }
         }
     }
 }

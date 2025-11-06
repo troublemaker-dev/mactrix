@@ -9,12 +9,14 @@ struct SidebarChannelView: View {
     }
     
     let selectedCategory: SelectedCategory
+    @Binding var selectedRoomId: String?
+    
     @State private var visibleRooms: [Room]? = nil
     
     var body: some View {
         Group {
             if let visibleRooms = visibleRooms {
-                List(visibleRooms) { room in
+                List(visibleRooms, selection: $selectedRoomId) { room in
                     NavigationLink(destination: { ChatView(room: room).id(room.id) }) {
                         HStack(alignment: .center) {
                             RoomIcon()
@@ -56,5 +58,5 @@ struct SidebarChannelView: View {
 }
 
 #Preview {
-    SidebarChannelView(selectedCategory: .rooms)
+    SidebarChannelView(selectedCategory: .rooms, selectedRoomId: .constant(nil))
 }

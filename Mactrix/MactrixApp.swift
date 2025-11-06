@@ -19,7 +19,7 @@ struct MactrixApp: App {
         WindowGroup {
             MainView()
         }
-        .windowToolbarStyle(.unifiedCompact)
+        //.windowToolbarStyle(.unifiedCompact)
         .environment(appState)
         
         Settings {

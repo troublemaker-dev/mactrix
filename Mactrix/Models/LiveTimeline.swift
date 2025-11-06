@@ -8,7 +8,7 @@
 import Foundation
 import MatrixRustSDK
 
-@Observable class RoomTimeline {
+@Observable class LiveTimeline {
     let timeline: Timeline
     fileprivate var timelineHandle: TaskHandle!
     
@@ -22,7 +22,7 @@ import MatrixRustSDK
     }
 }
 
-extension RoomTimeline: TimelineListener {
+extension LiveTimeline: TimelineListener {
     func onUpdate(diff: [TimelineDiff]) {
         for update in diff {
             switch update {

@@ -35,7 +35,7 @@ struct ChatView: View {
     @Environment(AppState.self) private var appState
     
     let room: Room
-    @State private var timeline: RoomTimeline? = nil
+    @State private var timeline: LiveTimeline? = nil
     
     @State private var errorMessage: String? = nil
     
@@ -77,9 +77,12 @@ struct ChatView: View {
             
             ChatInputView(room: room, timeline: timeline?.timeline)
         }
+        .background(Color(NSColor.controlBackgroundColor))
+        .navigationTitle(room.displayName() ?? "Unknown room")
+        .frame(minWidth: 250, minHeight: 200)
         .task(id: room) {
             do {
-                self.timeline = try await RoomTimeline(room: room)
+                self.timeline = try await LiveTimeline(room: room)
             } catch {
                 self.errorMessage = error.localizedDescription
             }
