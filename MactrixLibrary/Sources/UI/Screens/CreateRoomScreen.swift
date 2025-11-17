@@ -134,6 +134,7 @@ public struct CreateRoomScreen: View {
             }
         }
         .scrollBounceBehavior(.basedOnSize)
+        .navigationTitle("Create Room")
     }
     
     func submitForm() {

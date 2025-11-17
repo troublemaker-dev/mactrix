@@ -29,6 +29,7 @@ struct ChatView: View {
     @State private var scrollNearTop: Bool = false
     @State private var scrollAtBottom: Bool = true
     @State private var latestVisibleEvent: MatrixRustSDK.TimelineItem? = nil
+    @State private var latestMarkedReadEvent: MatrixRustSDK.TimelineItem? = nil
     
     func loadMoreMessages() {
         guard self.timeline?.paginating == .idle(hitTimelineStart: false) else { return }
@@ -116,20 +117,21 @@ struct ChatView: View {
         }
     }
     
-    var body: some View {
+    @ViewBuilder
+    var joinedRoom: some View {
         timelineScrollView
         .overlay(alignment: .bottom) {
             ChatInputView(room: room, timeline: timeline?.timeline)
         }
         .background(Color(NSColor.controlBackgroundColor))
         .navigationTitle(room.displayName() ?? "Unknown room")
+        .navigationSubtitle(room.topic() ?? "")
         .frame(minWidth: 250, minHeight: 200)
         .task(id: room) {
             do {
                 self.timeline = try await LiveTimeline(room: room)
-                
-                try await Task.sleep(for: .seconds(2))
             } catch {
+                print("loading timeline failed: \(error)")
                 self.errorMessage = error.localizedDescription
             }
         }
@@ -144,6 +146,7 @@ struct ChatView: View {
         .task(id: latestVisibleEvent) {
             do {
                 guard let latest = latestVisibleEvent else { return }
+                guard latest != latestMarkedReadEvent else { return }
                 try await Task.sleep(for: .seconds(2))
                 if latest.uniqueId() == latestVisibleEvent?.uniqueId() {
                     guard let event = latest.asEvent() else {
@@ -162,9 +165,52 @@ struct ChatView: View {
                     if !isLaterEvents {
                         try await timeline.timeline.markAsRead(receiptType: .fullyRead)
                         print("latest event marked as read: \(latest.id)")
+                        self.latestMarkedReadEvent = latest
                     }
                 }
             } catch { /* sleep cancelled */ }
+        }
+    }
+    
+    @ViewBuilder
+    var invitedRoom: some View {
+        Text("Invited to room")
+            .font(.title)
+        
+        Button("Accept Invite") {
+            Task {
+                do {
+                    try await room.join()
+                } catch {
+                    print("failed to join: \(error)")
+                }
+            }
+        }
+        
+        Button("Reject Invite") {
+            Task {
+                do {
+                    try await room.leave()
+                    try await room.forget()
+                } catch {
+                    print("failed to leave room: \(error)")
+                }
+            }
+        }
+    }
+    
+    var body: some View {
+        switch room.membership() {
+        case .joined:
+            joinedRoom
+        case .invited:
+            invitedRoom
+        case .left:
+            Text("You have left this room")
+        case .knocked:
+            Text("You have knocked to ask to join this room")
+        case .banned:
+            Text("You are banned from this room")
         }
     }
 }
