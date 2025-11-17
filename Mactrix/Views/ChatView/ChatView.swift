@@ -27,6 +27,8 @@ struct ChatView: View {
     
     @State private var scrollPosition = ScrollPosition(edge: .bottom)
     @State private var scrollNearTop: Bool = false
+    @State private var scrollAtBottom: Bool = true
+    @State private var latestVisibleEvent: MatrixRustSDK.TimelineItem? = nil
     
     func loadMoreMessages() {
         guard self.timeline?.paginating == .idle(hitTimelineStart: false) else { return }
@@ -91,7 +93,29 @@ struct ChatView: View {
                 loadMoreMessages()
             }
         }
-
+        .onScrollTargetVisibilityChange(idType: TimelineItem.ID.self) { visibleTimelineItemIds in
+            print("Visible Ids: \(visibleTimelineItemIds)")
+            
+            var latestEvent: MatrixRustSDK.TimelineItem? = nil
+            
+            for id in visibleTimelineItemIds {
+                guard let item = timeline?.timelineItems.first(where: { $0.id == id }) else {
+                    continue
+                }
+                
+                guard let event = item.asEvent() else { continue }
+                
+                if let latest = latestEvent {
+                    if latest.asEvent()!.date < event.date {
+                        latestEvent = item
+                    }
+                } else {
+                    latestEvent = item
+                }
+            }
+            
+            latestVisibleEvent = latestEvent
+        }
     }
     
     var body: some View {
@@ -105,6 +129,8 @@ struct ChatView: View {
         .task(id: room) {
             do {
                 self.timeline = try await LiveTimeline(room: room)
+                
+                try await Task.sleep(for: .seconds(2))
             } catch {
                 self.errorMessage = error.localizedDescription
             }
@@ -116,6 +142,31 @@ struct ChatView: View {
                     scrollPosition.scrollTo(edge: .bottom)
                 }
             }
+        }
+        .task(id: latestVisibleEvent) {
+            do {
+                guard let latest = latestVisibleEvent else { return }
+                try await Task.sleep(for: .seconds(2))
+                if latest.uniqueId() == latestVisibleEvent?.uniqueId() {
+                    guard let event = latest.asEvent() else {
+                        print("unreachable: latest should be event")
+                        return
+                    }
+                    
+                    guard let timeline else { return }
+                    
+                    // there doesn't seem to be an API to mark which event is the latest fully read.
+                    // instead only send the receipt when the latest message has been read
+                    let isLaterEvents = timeline.timelineItems.contains(where: {
+                        if let e = $0.asEvent() { e.date > event.date } else { false }
+                    })
+                    
+                    if !isLaterEvents {
+                        try await timeline.timeline.markAsRead(receiptType: .fullyRead)
+                        print("latest event marked as read: \(latest.id)")
+                    }
+                }
+            } catch { /* sleep cancelled */ }
         }
     }
 }
