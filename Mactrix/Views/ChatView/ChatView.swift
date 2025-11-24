@@ -1,5 +1,6 @@
 import MatrixRustSDK
 import Models
+import OSLog
 import SwiftUI
 import UI
 
@@ -36,7 +37,7 @@ struct ChatView: View {
     func loadMoreMessages() {
         guard scrollNearTop else { return }
         guard timeline.paginating == .idle(hitTimelineStart: false) else { return }
-        print("Reached top, fetching more messages...")
+        Logger.viewCycle.info("Reached top, fetching more messages...")
 
         Task {
             do {
@@ -47,7 +48,7 @@ struct ChatView: View {
 //                    loadMoreMessages()
 //                }
             } catch {
-                print("failed to fetch more message for timeline: \(error)")
+                Logger.viewCycle.error("failed to fetch more message for timeline: \(error)")
             }
         }
     }
@@ -91,7 +92,7 @@ struct ChatView: View {
         .onScrollGeometryChange(for: Bool.self) { geo in
             geo.visibleRect.maxY - geo.containerSize.height < 400.0
         } action: { _, nearTop in
-            print("scroll near top: \(nearTop)")
+            Logger.viewCycle.info("scroll near top: \(nearTop)")
             scrollNearTop = nearTop
             if nearTop {
                 loadMoreMessages()
@@ -152,7 +153,7 @@ struct ChatView: View {
                     try await Task.sleep(for: .seconds(2))
                     if latest.uniqueId() == latestVisibleEvent?.uniqueId() {
                         guard let event = latest.asEvent() else {
-                            print("unreachable: latest should be event")
+                            Logger.viewCycle.fault("unreachable: latest should be event")
                             return
                         }
 
@@ -166,7 +167,7 @@ struct ChatView: View {
 
                         if !isLaterEvents {
                             try await timeline.timeline?.markAsRead(receiptType: .fullyRead)
-                            print("latest event marked as read: \(latest.id)")
+                            Logger.viewCycle.info("latest event marked as read: \(latest.id)")
                             self.latestMarkedReadEvent = latest
                         }
                     }
@@ -184,7 +185,7 @@ struct ChatView: View {
                 do {
                     try await room.join()
                 } catch {
-                    print("failed to join: \(error)")
+                    Logger.viewCycle.error("failed to join: \(error)")
                 }
             }
         }
@@ -195,7 +196,7 @@ struct ChatView: View {
                     try await room.leave()
                     try await room.forget()
                 } catch {
-                    print("failed to leave room: \(error)")
+                    Logger.viewCycle.error("failed to leave room: \(error)")
                 }
             }
         }

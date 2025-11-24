@@ -62,7 +62,7 @@ extension MatrixRustSDK.RoomInfo: Models.RoomInfo {}
 
 extension MatrixRustSDK.TimelineItem: @retroactive Hashable, @retroactive Identifiable {
     public var id: String {
-        self.uniqueId().id
+        uniqueId().id
     }
 
     public static func == (lhs: MatrixRustSDK.TimelineItem, rhs: MatrixRustSDK.TimelineItem) -> Bool {
@@ -177,5 +177,28 @@ extension MatrixRustSDK.SessionVerificationData {
         case let .decimals(values):
             return .decimals(values: values)
         }
+    }
+}
+
+extension MatrixRustSDK.RoomPaginationStatus: @retroactive CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case let .idle(hitTimelineStart):
+            "idle, hitTimelineStart=\(hitTimelineStart)"
+        case .paginating:
+            "paginating"
+        }
+    }
+}
+
+extension MatrixRustSDK.Room: @retroactive CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "room \(id())"
+    }
+}
+
+extension MatrixRustSDK.RoomPreviewInfo: @retroactive CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "preview room info: \(roomId) \(name ?? "<no name>")"
     }
 }

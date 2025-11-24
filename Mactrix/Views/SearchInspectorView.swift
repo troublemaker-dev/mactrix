@@ -1,6 +1,7 @@
 import MatrixRustSDK
 import SwiftUI
 import UI
+import OSLog
 
 struct SearchUserPopover: View {
     @Environment(AppState.self) var appState
@@ -38,7 +39,7 @@ struct SearchUserPopover: View {
                 let roomId = try await matrixClient.client.createRoom(request: createRoomParams)
                 windowState.selectedRoomId = roomId
             } catch {
-                print("failed to get DM room for user \(user.id): \(error)")
+                Logger.viewCycle.error("failed to get DM room for user \(user.id): \(error)")
             }
         }
     }
@@ -97,7 +98,7 @@ struct SearchInspectorView: View {
             } catch is CancellationError {
                 /* search cancelled */
             } catch {
-                print("user search failed: \(error)")
+                Logger.viewCycle.error("user search failed: \(error)")
             }
         }
     }

@@ -1,6 +1,7 @@
 import Foundation
 import MatrixRustSDK
 import Models
+import OSLog
 
 @Observable
 public final class LiveRoom: MatrixRustSDK.Room, Models.Room {
@@ -34,7 +35,7 @@ public final class LiveRoom: MatrixRustSDK.Room, Models.Room {
             do {
                 self.roomInfo = try await self.roomInfo()
             } catch {
-                print("Failed to load room info: \(error)")
+                Logger.liveRoom.error("Failed to load room info: \(error)")
             }
         }
     }
@@ -43,7 +44,7 @@ public final class LiveRoom: MatrixRustSDK.Room, Models.Room {
         // guard not already synced
         guard fetchedMembers == nil else { return }
 
-        print("syncing members for room: \(id)")
+        Logger.liveRoom.debug("syncing members for room: \(self.id)")
 
         let memberIter = try await members()
         var result = [MatrixRustSDK.RoomMember]()
@@ -52,7 +53,7 @@ public final class LiveRoom: MatrixRustSDK.Room, Models.Room {
         }
         fetchedMembers = result
 
-        print("synced \(fetchedMembers?.count, default: "(unknown)") members")
+        Logger.liveRoom.debug("synced \(self.fetchedMembers?.count ?? -1) members")
     }
 
     public var displayName: String? {

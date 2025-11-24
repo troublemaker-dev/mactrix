@@ -1,4 +1,5 @@
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 
 struct ChatInputView: View {
@@ -23,7 +24,7 @@ struct ChatInputView: View {
                     let _ = try await timeline.send(msg: msg)
                 }
             } catch {
-                print("failed to send message: \(error)")
+                Logger.viewCycle.error("failed to send message: \(error)")
             }
 
             chatInput = ""

@@ -1,5 +1,6 @@
 import Foundation
 import MatrixRustSDK
+import OSLog
 import UserNotifications
 
 extension MatrixClient: @MainActor RoomListEntriesListener {
@@ -59,7 +60,7 @@ extension MatrixClient: @MainActor RoomListServiceSyncIndicatorListener {
 
 extension MatrixClient: @MainActor MatrixRustSDK.ClientDelegate {
     func didReceiveAuthError(isSoftLogout: Bool) {
-        print("did receive auth error: soft logout \(isSoftLogout)")
+        Logger.matrixClient.debug("did receive auth error: soft logout \(isSoftLogout, privacy: .public)")
         if !isSoftLogout {
             authenticationFailed = true
         }
@@ -68,37 +69,37 @@ extension MatrixClient: @MainActor MatrixRustSDK.ClientDelegate {
 
 extension MatrixClient: @MainActor SessionVerificationControllerDelegate {
     func didReceiveVerificationRequest(details: MatrixRustSDK.SessionVerificationRequestDetails) {
-        print("session verification: didReceiveVerificationRequest")
+        Logger.matrixClient.debug("session verification: didReceiveVerificationRequest")
         sessionVerificationRequest = details
     }
 
     func didAcceptVerificationRequest() {
-        print("session verification: didAcceptVerificationRequest")
+        Logger.matrixClient.debug("session verification: didAcceptVerificationRequest")
     }
 
     func didStartSasVerification() {
-        print("session verification: didStartSasVerification")
+        Logger.matrixClient.debug("session verification: didStartSasVerification")
     }
 
     func didReceiveVerificationData(data: MatrixRustSDK.SessionVerificationData) {
-        print("session verification: didReceiveVerificationData")
+        Logger.matrixClient.debug("session verification: didReceiveVerificationData")
         sessionVerificationData = data
     }
 
     func didFail() {
-        print("session verification: didFail")
+        Logger.matrixClient.debug("session verification: didFail")
         sessionVerificationRequest = nil
         sessionVerificationData = nil
     }
 
     func didCancel() {
-        print("session verification: didCancel")
+        Logger.matrixClient.debug("session verification: didCancel")
         sessionVerificationRequest = nil
         sessionVerificationData = nil
     }
 
     func didFinish() {
-        print("session verification: didFinish")
+        Logger.matrixClient.debug("session verification: didFinish")
         sessionVerificationRequest = nil
         sessionVerificationData = nil
     }

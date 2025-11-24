@@ -1,14 +1,15 @@
 import Foundation
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 
 @MainActor
 @Observable public final class LiveTimeline {
     let room: MatrixRustSDK.Room
     public let isThreadFocus: Bool
-    
+
     public var timeline: Timeline?
-    
+
     private var timelineHandle: TaskHandle?
     private var paginateHandle: TaskHandle?
 
@@ -16,7 +17,7 @@ import SwiftUI
     public var errorMessage: String?
     public var focusedTimelineEventId: String?
     public var focusedThreadTimeline: LiveTimeline?
-    public var sendReplyTo: MatrixRustSDK.EventTimelineItem? = nil
+    public var sendReplyTo: MatrixRustSDK.EventTimelineItem?
 
     public private(set) var timelineItems: [TimelineItem]?
     public private(set) var paginating: RoomPaginationStatus = .idle(hitTimelineStart: false)
@@ -29,7 +30,7 @@ import SwiftUI
             do {
                 try await configureTimeline()
             } catch {
-                print("failed to configure timeline: \(error)")
+                Logger.liveTimeline.error("failed to configure timeline: \(error)")
                 self.errorMessage = error.localizedDescription
             }
         }
@@ -42,7 +43,7 @@ import SwiftUI
             do {
                 try await configureTimeline(threadId: threadId)
             } catch {
-                print("failed to configure timeline: \(error)")
+                Logger.liveTimeline.error("failed to configure timeline: \(error)")
                 self.errorMessage = error.localizedDescription
             }
         }
@@ -82,21 +83,21 @@ import SwiftUI
     }
 
     public func focusEvent(id eventId: String) {
-        print("focus event: \(eventId)")
+        Logger.liveTimeline.info("focus event: \(eventId)")
 
         if let item = timelineItems?.first(where: { $0.asEvent()?.eventOrTransactionId.id == eventId }) {
-            print("scrolling to item \(item.id)")
+            Logger.liveTimeline.debug("scrolling to item \(item.id)")
             focusedTimelineEventId = eventId
             withAnimation {
                 scrollPosition.scrollTo(id: item.id)
             }
         } else {
-            print("could not find item in timeline")
+            Logger.liveTimeline.warning("could not find item in timeline")
         }
     }
 
     public func focusThread(rootEventId: String) {
-        print("focus thread: \(rootEventId)")
+        Logger.liveTimeline.info("focus thread: \(rootEventId)")
         focusedThreadTimeline = LiveTimeline(room: room, focusThread: rootEventId)
     }
 }
@@ -104,7 +105,7 @@ import SwiftUI
 extension LiveTimeline: @MainActor TimelineListener {
     public func onUpdate(diff: [TimelineDiff]) {
         let oldView = scrollPosition.viewID
-        print("onUpdate old view \(oldView.debugDescription)")
+        Logger.liveTimeline.trace("onUpdate old view \(oldView.debugDescription)")
 
         for update in diff {
             switch update {
@@ -141,7 +142,7 @@ extension LiveTimeline: @MainActor TimelineListener {
 
 extension LiveTimeline: @MainActor PaginationStatusListener {
     public func onUpdate(status: MatrixRustSDK.RoomPaginationStatus) {
-        print("updating timeline paginating: \(status)")
+        Logger.liveTimeline.debug("updating timeline paginating: \(status.debugDescription)")
         paginating = status
     }
 }

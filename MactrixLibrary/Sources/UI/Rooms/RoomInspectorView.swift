@@ -1,5 +1,6 @@
 import Models
 import SwiftUI
+import OSLog
 
 public struct UserProfileRow<Profile: UserProfile>: View {
     let userProfile: Profile
@@ -94,7 +95,7 @@ public struct RoomInspectorView<Room: Models.Room, RoomMember: Models.RoomMember
                         do {
                             try await room.syncMembers()
                         } catch {
-                            print("Failed to sync members in inspector: \(error)")
+                            Logger.viewCycle.error("Failed to sync members in inspector: \(error)")
                         }
                     }
             }

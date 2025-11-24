@@ -1,4 +1,5 @@
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 
 struct SidebarSyncStateView: View {
@@ -40,7 +41,7 @@ struct SidebarSyncStateView: View {
                         do {
                             try await appState.matrixClient?.startSync()
                         } catch {
-                            print("failed to restart sync: \(error)")
+                            Logger.viewCycle.error("failed to restart sync: \(error)")
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 import Foundation
 import MatrixRustSDK
+import OSLog
 
 @Observable
 public final class SidebarRoom: MatrixRustSDK.Room {
@@ -19,7 +20,7 @@ public final class SidebarRoom: MatrixRustSDK.Room {
             do {
                 self.roomInfo = try await self.roomInfo()
             } catch {
-                print("Failed to load room info: \(error)")
+                Logger.viewCycle.error("Failed to load room info: \(error)")
             }
         }
     }

@@ -1,5 +1,6 @@
 import Foundation
 import MatrixRustSDK
+import OSLog
 
 @Observable
 final class LiveSpaceRoomList {
@@ -32,7 +33,7 @@ final class LiveSpaceRoomList {
             do {
                 try await spaceRoomList.paginate()
             } catch {
-                print("Failed to paginate space list: \(error)")
+                Logger.viewCycle.error("Failed to paginate space list: \(error)")
             }
         }
     }

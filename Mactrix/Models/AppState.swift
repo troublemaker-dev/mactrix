@@ -1,6 +1,7 @@
 import Foundation
 import MatrixRustSDK
 import Models
+import OSLog
 
 @MainActor
 @Observable final class AppState {
@@ -10,7 +11,7 @@ import Models
         do {
             try await matrixClient?.reset()
         } catch {
-            print("Failed to reset matrix client: \(error)")
+            Logger.viewCycle.error("Failed to reset matrix client: \(error)")
         }
         matrixClient = nil
     }

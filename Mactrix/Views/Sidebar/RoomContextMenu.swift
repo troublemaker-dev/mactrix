@@ -1,5 +1,6 @@
 import MatrixRustSDK
 import SwiftUI
+import OSLog
 
 struct RoomContextMenu: View {
     @Environment(WindowState.self) var windowState
@@ -11,10 +12,10 @@ struct RoomContextMenu: View {
             Button {
                 Task {
                     do {
-                        print("marking room unread/read")
+                        Logger.viewCycle.info("marking room unread/read")
                         try await room.setUnreadFlag(newValue: !roomInfo.isMarkedUnread)
                     } catch {
-                        print("failed to mark room unread/read: \(error)")
+                        Logger.viewCycle.error("failed to mark room unread/read: \(error)")
                     }
                 }
             } label: {
@@ -28,10 +29,10 @@ struct RoomContextMenu: View {
             Button {
                 Task {
                     do {
-                        print("mark room favourite: \(!roomInfo.isFavourite)")
+                        Logger.viewCycle.info("mark room favourite: \(!roomInfo.isFavourite)")
                         try await room.setIsFavourite(isFavourite: !roomInfo.isFavourite, tagOrder: nil)
                     } catch {
-                        print("failed to mark room favourite: \(error)")
+                        Logger.viewCycle.error("failed to mark room favourite: \(error)")
                     }
                 }
 
@@ -47,7 +48,7 @@ struct RoomContextMenu: View {
         Button {
             Task {
                 do {
-                    print("leaving room: \(room.id())")
+                    Logger.viewCycle.info("leaving room: \(room.id())")
                     try await room.leave()
                     try await room.forget()
 
@@ -55,7 +56,7 @@ struct RoomContextMenu: View {
                         windowState.selectedRoomId = nil
                     }
                 } catch {
-                    print("failed to leave room: \(error)")
+                    Logger.viewCycle.error("failed to leave room: \(error)")
                 }
             }
         } label: {

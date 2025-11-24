@@ -1,4 +1,5 @@
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 import UI
 
@@ -38,7 +39,7 @@ struct MainView: View {
                         do {
                             try await appState.matrixClient?.client.getSessionVerificationController().declineVerification()
                         } catch {
-                            print("failed to decline verification: \(error)")
+                            Logger.viewCycle.error("failed to decline verification: \(error)")
                             appState.matrixClient?.sessionVerificationData = nil
                         }
                     }
@@ -71,14 +72,14 @@ struct MainView: View {
                             do {
                                 try await appState.matrixClient?.client.getSessionVerificationController().approveVerification()
                             } catch {
-                                print("failed to approve verification: \(error)")
+                                Logger.viewCycle.error("failed to approve verification: \(error)")
                                 appState.matrixClient?.sessionVerificationData = nil
                             }
                         case .decline:
                             do {
                                 try await appState.matrixClient?.client.getSessionVerificationController().declineVerification()
                             } catch {
-                                print("failed to decline verification: \(error)")
+                                Logger.viewCycle.error("failed to decline verification: \(error)")
                                 appState.matrixClient?.sessionVerificationData = nil
                             }
                         }
@@ -88,7 +89,7 @@ struct MainView: View {
         })
         .onChange(of: appState.matrixClient == nil) { _, matrixClientIsNil in
             if matrixClientIsNil {
-                print("Matrix client is nil, present welcome sheet")
+                Logger.viewCycle.info("Matrix client is nil, present welcome sheet")
                 showWelcomeSheet = true
             }
         }
@@ -97,12 +98,32 @@ struct MainView: View {
         }
         .onChange(of: appState.matrixClient?.authenticationFailed) { _, authFailed in
             if authFailed == true {
-                print("Logging out since auth failed")
+                Logger.viewCycle.info("Logging out since auth failed")
                 appState.matrixClient = nil
             }
         }
         .toolbar {
-            AppCommands.createRoomButton(windowState: windowState)
+            Button {
+                Logger.viewCycle.info("Show pins")
+            } label: {
+                Label("Show Pins", systemImage: "pin.circle")
+            }
+            .help("Show Pins")
+            .disabled(windowState.selectedRoomId == nil)
+
+            Button {
+                Logger.viewCycle.info("Show threads")
+            } label: {
+                Label("Show Threads", systemImage: "list.bullet.circle")
+            }
+            .help("Show Threads")
+            .disabled(windowState.selectedRoomId == nil)
+
+            if !windowState.inspectorOrSearchActive.wrappedValue {
+                HStack {
+                    Divider()
+                }
+            }
         }
         .searchable(text: $windowState.searchQuery, tokens: $windowState.searchTokens, isPresented: $windowState.searchFocused, placement: .automatic, prompt: "Search") { token in
             switch token {
@@ -134,7 +155,7 @@ struct MainView: View {
                 appState.matrixClient = matrixClient
             }
         } catch {
-            print("Failed to restore session: \(error)")
+            Logger.viewCycle.error("Failed to restore matrix session: \(error)")
         }
 
         showWelcomeSheet = appState.matrixClient == nil
@@ -167,7 +188,7 @@ struct MainView: View {
         guard let matrixClient = appState.matrixClient else { return }
 
         do {
-            print("Selected room: \(windowState.selectedRoomId.debugDescription)")
+            Logger.viewCycle.debug("Selected room: \(windowState.selectedRoomId.debugDescription)")
 
             if let roomId = windowState.selectedRoomId {
                 if let selectedRoom = try matrixClient.client.getRoom(roomId: roomId) {
@@ -175,14 +196,14 @@ struct MainView: View {
                 } else {
                     let roomPreview = try await matrixClient.client.getRoomPreviewFromRoomId(roomId: roomId, viaServers: ["matrix.org"])
 
-                    print("Selected room preview: \(roomPreview.info())")
+                    Logger.viewCycle.debug("Selected room preview: \(roomPreview.info().debugDescription)")
                     windowState.selectedScreen = .previewRoom(roomPreview)
                 }
             } else {
                 windowState.selectedScreen = .none
             }
         } catch {
-            print("Failed to get room \(error)")
+            Logger.viewCycle.error("Failed to get room \(error)")
         }
     }
 }

@@ -1,4 +1,5 @@
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 
 struct ChangableField: View {
@@ -56,14 +57,14 @@ struct AccountSettingsView: View {
                         try await matrixClient.client.setDisplayName(name: newDisplayName)
                         displayName = newDisplayName
                     } catch {
-                        print("Failed to update display name: \(error)")
+                        Logger.viewCycle.error("Failed to update display name: \(error)")
                     }
                 })
                 .task {
                     do {
                         displayName = try await matrixClient.client.displayName()
                     } catch {
-                        print("Failed to load display name: \(error)")
+                        Logger.viewCycle.error("Failed to load display name: \(error)")
                     }
                 }
 

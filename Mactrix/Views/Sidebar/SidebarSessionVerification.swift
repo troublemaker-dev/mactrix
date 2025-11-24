@@ -1,4 +1,5 @@
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 
 struct SessionVerificationStatusView: View {
@@ -26,7 +27,7 @@ struct SessionVerificationStatusView: View {
                         do {
                             try await appState.matrixClient?.requestDeviceVerification()
                         } catch {
-                            print("request device verification failed: \(error)")
+                            Logger.viewCycle.error("request device verification failed: \(error)")
                         }
                     }
                 }
@@ -49,7 +50,7 @@ struct SessionVerificationStatusView: View {
                             do {
                                 try await appState.matrixClient?.acceptVerificationRequest(request: verificationRequest)
                             } catch {
-                                print("failed to accept verification request: \(error)")
+                                Logger.viewCycle.error("failed to accept verification request: \(error)")
                                 appState.matrixClient?.sessionVerificationRequest = nil
                             }
                         }
@@ -61,7 +62,7 @@ struct SessionVerificationStatusView: View {
                             do {
                                 try await appState.matrixClient?.declineVerificationRequest(request: verificationRequest)
                             } catch {
-                                print("failed to decline verification request: \(error)")
+                                Logger.viewCycle.error("failed to decline verification request: \(error)")
                                 appState.matrixClient?.sessionVerificationRequest = nil
                             }
                         }

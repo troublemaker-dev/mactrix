@@ -1,6 +1,7 @@
 import MatrixRustSDK
 import SwiftUI
 import UI
+import OSLog
 
 struct SpaceDisclosureGroup: View {
     @Environment(AppState.self) var appState
@@ -49,7 +50,7 @@ struct SpaceDisclosureGroup: View {
     var joinRoom: (() async throws -> Void)? {
         if appState.matrixClient?.rooms.contains(where: { $0.id() == space.id }) == false {
             return {
-                print("Joining room: \(space.id)")
+                Logger.viewCycle.error("Joining room: \(space.id)")
                 guard let matrixClient = appState.matrixClient else { return }
                 let room = try await matrixClient.client.joinRoomById(roomId: space.id)
                 windowState.selectedScreen = .joinedRoom(LiveRoom(matrixRoom: room), timeline: LiveTimeline(room: room))

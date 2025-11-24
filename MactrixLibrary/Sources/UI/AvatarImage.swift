@@ -1,4 +1,5 @@
 import SwiftUI
+import OSLog
 
 @MainActor
 public protocol ImageLoader {
@@ -42,7 +43,7 @@ public struct AvatarImage<Preview: View>: View {
                 do {
                     avatar = try await imageLoader?.loadImage(matrixUrl: avatarUrl)
                 } catch {
-                    print("failed to load avatar (\(avatarUrl): \(error)")
+                    Logger.viewCycle.error("failed to load avatar (\(avatarUrl): \(error)")
                 }
             }
     }

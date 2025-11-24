@@ -1,5 +1,6 @@
 import Models
 import SwiftUI
+import OSLog
 
 struct ErrorPopover: View {
     let error: Error
@@ -132,7 +133,7 @@ public struct RoomRow: View {
             do {
                 try await joinRoom()
             } catch {
-                print("failed to join room \(error)")
+                Logger.viewCycle.error("failed to join room \(error)")
                 self.error = error
                 self.isErrorVisible = true
             }

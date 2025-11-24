@@ -1,8 +1,10 @@
 import Foundation
 import KeychainAccess
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 import UI
+import UniformTypeIdentifiers
 
 struct UserSession: Codable {
     let accessToken: String
@@ -42,7 +44,7 @@ struct UserSession: Codable {
     }
 
     static func loadUserFromKeychain() throws -> Self? {
-        print("Load user from keychain")
+        Logger.matrixClient.debug("Load user from keychain")
         /* #if DEBUG
              if true {
                  return try JSONDecoder().decode(Self.self, from: DevSecrets.matrixSession.data(using: .utf8)!)
@@ -136,13 +138,13 @@ enum SelectedScreen {
     }
 
     func reset() async throws {
-        print("matrix client sign out")
+        Logger.matrixClient.debug("matrix client sign out")
         try? await client.logout()
         try? FileManager.default.removeItem(at: .sessionData(for: storeID))
         try? FileManager.default.removeItem(at: .sessionCaches(for: storeID))
         let keychain = Keychain(service: applicationID)
         try keychain.removeAll()
-        print("matrix client sign out complete")
+        Logger.matrixClient.debug("matrix client sign out complete")
     }
 
     var syncService: SyncService?
@@ -188,7 +190,7 @@ enum SelectedScreen {
 
         // Start the sync loop.
         await _syncService.start()
-        print("Matrix sync started")
+        Logger.matrixClient.info("Matrix sync started")
     }
 
     func clearCache() async throws {
@@ -222,14 +224,16 @@ enum MatrixClientRestoreSessionError: Error {
 
 extension MatrixClient: @MainActor MatrixRustSDK.ClientSessionDelegate {
     func retrieveSessionFromKeychain(userId: String) throws -> MatrixRustSDK.Session {
-        print("client session delegate: retrieve session from keychain: \(userId)")
+        Logger.matrixClient.debug("client session delegate: retrieve session from keychain: \(userId, privacy: .sensitive)")
 
         let userSession = try UserSession.loadUserFromKeychain()
         if let userSession {
             if userSession.userID == userId {
                 return userSession.session
             } else {
-                print("restored user session has wrong userId: \(userSession.userID), expected \(userId)")
+                Logger.matrixClient.debug(
+                    "restored user session has wrong userId: \(userSession.userID, privacy: .sensitive), expected \(userId, privacy: .sensitive)"
+                )
                 throw MatrixClientRestoreSessionError.wrongUserId
             }
         } else {
@@ -238,11 +242,11 @@ extension MatrixClient: @MainActor MatrixRustSDK.ClientSessionDelegate {
     }
 
     func saveSessionInKeychain(session: MatrixRustSDK.Session) {
-        print("client session delegate: save session in keychain")
+        Logger.matrixClient.debug("client session delegate: save session in keychain")
         do {
             try UserSession(session: session, storeID: storeID).saveUserToKeychain()
         } catch {
-            print("failed to save session in keychain: \(error)")
+            Logger.matrixClient.error("failed to save session in keychain: \(error)")
         }
     }
 }
@@ -250,7 +254,12 @@ extension MatrixClient: @MainActor MatrixRustSDK.ClientSessionDelegate {
 extension MatrixClient: UI.ImageLoader {
     func loadImage(matrixUrl: String) async throws -> Image? {
         let imageData = try await client.getMediaContent(mediaSource: .fromUrl(url: matrixUrl))
-        return try await Image(importing: imageData, contentType: nil)
+        do {
+            return try await Image(importing: imageData, contentType: .image)
+        } catch {
+            Logger.matrixClient.error("failed convert matrix media data to Image: \(error) \(imageData)")
+            throw error
+        }
     }
 }
 

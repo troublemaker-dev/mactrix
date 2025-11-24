@@ -1,5 +1,6 @@
 import MatrixRustSDK
 import Models
+import OSLog
 import SwiftUI
 import UI
 
@@ -23,26 +24,26 @@ struct ChatMessageView: View, UI.MessageEventActions {
             do {
                 let _ = try await timeline.timeline?.toggleReaction(itemId: event.eventOrTransactionId, key: key)
             } catch {
-                print("Failed to toggle reaction: \(error)")
+                Logger.viewCycle.error("Failed to toggle reaction: \(error)")
             }
         }
     }
 
     func reply() {
-        print("Reply to event: \(event.eventOrTransactionId.id)")
+        Logger.viewCycle.info("Reply to event: \(event.eventOrTransactionId.id)")
         timeline.sendReplyTo = event
     }
 
     func replyInThread() {}
 
     func pin() {
-        print("Pinning message")
+        Logger.viewCycle.info("Pinning message")
         guard case let .eventId(eventId: eventId) = event.eventOrTransactionId else { return }
         Task {
             do {
                 let _ = try await timeline.timeline?.pinEvent(eventId: eventId)
             } catch {
-                print("Failed to ping message: \(error)")
+                Logger.viewCycle.error("Failed to ping message: \(error)")
             }
         }
     }
@@ -67,7 +68,11 @@ struct ChatMessageView: View, UI.MessageEventActions {
             case let .notice(content: content):
                 Text("Notice: \(content.body)").textSelection(.enabled)
             case let .text(content: content):
-                Text(content.body).textSelection(.enabled)
+                if let markdownText = try? AttributedString(markdown: content.body) {
+                    Text(markdownText).textSelection(.enabled)
+                } else {
+                    Text(content.body).textSelection(.enabled)
+                }
             case let .location(content: content):
                 Text("Location: \(content.body) \(content.geoUri)").textSelection(.enabled)
             case let .other(msgtype: msgtype, body: body):

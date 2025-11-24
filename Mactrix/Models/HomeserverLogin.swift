@@ -1,6 +1,7 @@
 import AuthenticationServices
 import Foundation
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 
 struct HomeserverLogin {
@@ -28,15 +29,15 @@ struct HomeserverLogin {
 
     @MainActor
     func loginOidc(webAuthSession: WebAuthenticationSession) async throws -> MatrixClient {
-        print("login oidc begin")
+        Logger.matrixClient.debug("login oidc begin")
         let authInfo = try await unauthenticatedClient.urlForOidc(oidcConfiguration: oidcConfiguration, prompt: .login, loginHint: nil, deviceId: nil, additionalScopes: nil)
         let url = URL(string: authInfo.loginUrl())!
 
-        print("Auth url: \(url)")
+        Logger.matrixClient.debug("Auth url: \(url, privacy: .sensitive)")
 
         let callbackUrl = try await webAuthSession.authenticate(using: url, callback: .customScheme("com.github"), additionalHeaderFields: [:])
 
-        print("after sign in")
+        Logger.matrixClient.debug("after sign in")
 
         try await unauthenticatedClient.loginWithOidcCallback(callbackUrl: callbackUrl.absoluteString)
 

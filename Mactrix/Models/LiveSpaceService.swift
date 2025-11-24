@@ -1,5 +1,6 @@
 import Foundation
 import MatrixRustSDK
+import OSLog
 
 @Observable public final class LiveSpaceService {
     public let spaceService: SpaceService
@@ -15,7 +16,7 @@ import MatrixRustSDK
             listenerTaskHandle = await spaceService.subscribeToJoinedSpaces(listener: self)
 
             let joinedSpaces = await spaceService.joinedSpaces()
-            print("Joined spaces: \(joinedSpaces)")
+            Logger.liveSpaceService.debug("Joined spaces: \(joinedSpaces)")
         }
     }
 }
