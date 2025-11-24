@@ -1,6 +1,6 @@
 import Models
-import SwiftUI
 import OSLog
+import SwiftUI
 
 public struct UserProfileRow<Profile: UserProfile>: View {
     let userProfile: Profile
@@ -16,6 +16,7 @@ public struct UserProfileRow<Profile: UserProfile>: View {
     public var body: some View {
         Label(title: { Text(userProfile.displayName ?? userProfile.userId) }, icon: {
             AvatarImage(avatarUrl: userProfile.avatarUrl, imageLoader: imageLoader, placeholder: { Image(systemName: "person") })
+                .clipShape(Circle())
         })
     }
 }
@@ -77,8 +78,12 @@ public struct RoomInspectorView<Room: Models.Room, RoomMember: Models.RoomMember
     public var body: some View {
         List {
             VStack(alignment: .center) {
-                Text(room.displayName ?? "Unknown Room").font(.title)
-                Text(room.topic ?? "No Topic")
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(room.displayName ?? "Unknown Room").font(.title)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text((room.topic ?? "No Topic").formatAsMarkdown)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
 
                 RoomEncryptionBadge(state: room.encryptionState)
             }
@@ -114,7 +119,7 @@ public struct RoomInspectorView<Room: Models.Room, RoomMember: Models.RoomMember
                 .textSelection(.enabled)
             }
         }
-        .inspectorColumnWidth(min: 200, ideal: 250, max: 400)
+        .inspectorColumnWidth(min: 200, ideal: 250, max: nil)
     }
 }
 

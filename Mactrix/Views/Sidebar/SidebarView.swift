@@ -88,7 +88,7 @@ struct SidebarView: View {
                 }
             }
         }
-        .navigationSplitViewColumnWidth(ideal: 200, max: 400)
+        .navigationSplitViewColumnWidth(min: 150, ideal: 200, max: nil)
         .toolbar {
             AppCommands.createRoomButton(windowState: windowState)
         }

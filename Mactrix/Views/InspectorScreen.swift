@@ -28,7 +28,7 @@ struct InspectorScreen: View {
                         }
                         ChatView(room: room, timeline: thread)
                     }
-                    .inspectorColumnWidth(min: 200, ideal: 400, max: 800)
+                    .inspectorColumnWidth(min: 200, ideal: 400, max: nil)
                 } else {
                     UI.RoomInspectorView(room: room, members: room.fetchedMembers, roomInfo: room.roomInfo, imageLoader: appState.matrixClient, inspectorVisible: $windowState.inspectorVisible)
                 }

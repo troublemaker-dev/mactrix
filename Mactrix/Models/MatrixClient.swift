@@ -252,10 +252,18 @@ extension MatrixClient: @MainActor MatrixRustSDK.ClientSessionDelegate {
 }
 
 extension MatrixClient: UI.ImageLoader {
-    func loadImage(matrixUrl: String) async throws -> Image? {
-        let imageData = try await client.getMediaContent(mediaSource: .fromUrl(url: matrixUrl))
+    func loadImage(matrixUrl: String, size: CGSize?) async throws -> Image? {
+        let imageData: Data
+        if let size {
+            let width = UInt64(size.width)
+            let height = UInt64(size.height)
+            imageData = try await client.getMediaThumbnail(mediaSource: .fromUrl(url: matrixUrl), width: UInt64(width), height: UInt64(height))
+        } else {
+            imageData = try await client.getMediaContent(mediaSource: .fromUrl(url: matrixUrl))
+        }
+
         do {
-            return try await Image(importing: imageData, contentType: .image)
+            return try await Image(importing: imageData, contentType: imageData.computeMimeType())
         } catch {
             Logger.matrixClient.error("failed convert matrix media data to Image: \(error) \(imageData)")
             throw error

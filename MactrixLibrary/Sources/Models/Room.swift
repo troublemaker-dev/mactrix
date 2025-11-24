@@ -25,6 +25,12 @@ public struct MockRoom: Room, Identifiable {
     public let encryptionState: EncryptionState
 
     public static var previewRoom: MockRoom {
-        return MockRoom(id: UUID().uuidString, displayName: "Test Room", topic: "The topic of the room", encryptionState: .encrypted)
+        let topic = """
+        The topic of the room!
+
+        The topic can span multiple lines like this.
+        It also supports markdown for **bold** and _italic_ text.
+        """
+        return MockRoom(id: UUID().uuidString, displayName: "Test Room", topic: topic, encryptionState: .encrypted)
     }
 }

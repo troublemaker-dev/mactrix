@@ -10,14 +10,14 @@ public struct MessageReplyView: View {
         self.message = message
         self.action = action
     }
-    
+
     var content: some View {
         HStack {
             VStack(alignment: .leading) {
                 Text("Reply: " + username)
                     .bold()
                     .textSelection(.enabled)
-                Text(message)
+                Text(message.formatAsMarkdown)
                     .textSelection(.enabled)
                     .foregroundStyle(.secondary)
             }

@@ -1,9 +1,9 @@
-import SwiftUI
 import OSLog
+import SwiftUI
 
 @MainActor
 public protocol ImageLoader {
-    func loadImage(matrixUrl: String) async throws -> Image?
+    func loadImage(matrixUrl: String, size: CGSize?) async throws -> Image?
 }
 
 public struct AvatarImage<Preview: View>: View {
@@ -35,16 +35,18 @@ public struct AvatarImage<Preview: View>: View {
     }
 
     public var body: some View {
-        imageOrPlaceholder
-            .aspectRatio(1.0, contentMode: .fit)
-            .task(id: avatarUrl) {
-                guard let avatarUrl = avatarUrl else { return }
+        GeometryReader { proxy in
+            imageOrPlaceholder
+                .aspectRatio(1.0, contentMode: .fit)
+                .task(id: avatarUrl) {
+                    guard let avatarUrl = avatarUrl else { return }
 
-                do {
-                    avatar = try await imageLoader?.loadImage(matrixUrl: avatarUrl)
-                } catch {
-                    Logger.viewCycle.error("failed to load avatar (\(avatarUrl): \(error)")
+                    do {
+                        avatar = try await imageLoader?.loadImage(matrixUrl: avatarUrl, size: proxy.size)
+                    } catch {
+                        Logger.viewCycle.error("failed to load avatar (\(avatarUrl): \(error)")
+                    }
                 }
-            }
+        }
     }
 }

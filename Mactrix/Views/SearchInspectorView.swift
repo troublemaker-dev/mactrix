@@ -1,7 +1,7 @@
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 import UI
-import OSLog
 
 struct SearchUserPopover: View {
     @Environment(AppState.self) var appState
@@ -120,6 +120,6 @@ struct SearchInspectorView: View {
 
     var body: some View {
         viewSelector
-            .inspectorColumnWidth(min: 300, ideal: 300, max: 400)
+            .inspectorColumnWidth(min: 300, ideal: 300, max: 600)
     }
 }

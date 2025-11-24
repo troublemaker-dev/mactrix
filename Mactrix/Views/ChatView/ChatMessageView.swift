@@ -68,11 +68,7 @@ struct ChatMessageView: View, UI.MessageEventActions {
             case let .notice(content: content):
                 Text("Notice: \(content.body)").textSelection(.enabled)
             case let .text(content: content):
-                if let markdownText = try? AttributedString(markdown: content.body) {
-                    Text(markdownText).textSelection(.enabled)
-                } else {
-                    Text(content.body).textSelection(.enabled)
-                }
+                Text(content.body.formatAsMarkdown).textSelection(.enabled)
             case let .location(content: content):
                 Text("Location: \(content.body) \(content.geoUri)").textSelection(.enabled)
             case let .other(msgtype: msgtype, body: body):
