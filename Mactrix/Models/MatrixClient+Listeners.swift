@@ -67,6 +67,13 @@ extension MatrixClient: @MainActor MatrixRustSDK.ClientDelegate {
     }
 }
 
+extension MatrixClient: @MainActor MatrixRustSDK.IgnoredUsersListener {
+    func call(ignoredUserIds: [String]) {
+        Logger.matrixClient.debug("Updated ignored users: \(ignoredUserIds)")
+        self.ignoredUserIds = ignoredUserIds
+    }
+}
+
 extension MatrixClient: @MainActor SessionVerificationControllerDelegate {
     func didReceiveVerificationRequest(details: MatrixRustSDK.SessionVerificationRequestDetails) {
         Logger.matrixClient.debug("session verification: didReceiveVerificationRequest")

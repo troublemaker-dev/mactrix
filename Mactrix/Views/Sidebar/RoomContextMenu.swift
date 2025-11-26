@@ -13,7 +13,7 @@ struct RoomContextMenu: View {
                 Task {
                     do {
                         Logger.viewCycle.info("marking room unread/read")
-                        try await room.setUnreadFlag(newValue: !roomInfo.isMarkedUnread)
+                        try await room.room.setUnreadFlag(newValue: !roomInfo.isMarkedUnread)
                     } catch {
                         Logger.viewCycle.error("failed to mark room unread/read: \(error)")
                     }
@@ -30,7 +30,7 @@ struct RoomContextMenu: View {
                 Task {
                     do {
                         Logger.viewCycle.info("mark room favourite: \(!roomInfo.isFavourite)")
-                        try await room.setIsFavourite(isFavourite: !roomInfo.isFavourite, tagOrder: nil)
+                        try await room.room.setIsFavourite(isFavourite: !roomInfo.isFavourite, tagOrder: nil)
                     } catch {
                         Logger.viewCycle.error("failed to mark room favourite: \(error)")
                     }
@@ -48,11 +48,11 @@ struct RoomContextMenu: View {
         Button {
             Task {
                 do {
-                    Logger.viewCycle.info("leaving room: \(room.id())")
-                    try await room.leave()
-                    try await room.forget()
+                    Logger.viewCycle.info("leaving room: \(room.room.id())")
+                    try await room.room.leave()
+                    try await room.room.forget()
 
-                    if windowState.selectedRoomId == room.id() {
+                    if windowState.selectedRoomId == room.room.id() {
                         windowState.selectedRoomId = nil
                     }
                 } catch {

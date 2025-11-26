@@ -125,7 +125,7 @@ struct ChatView: View {
     }
 
     var toolbarSubtitle: String {
-        guard let topic = room.topic() else { return "" }
+        guard let topic = room.room.topic() else { return "" }
         let firstLine = topic.split(separator: "\n").first ?? ""
         return String(firstLine)
     }
@@ -134,10 +134,10 @@ struct ChatView: View {
     var joinedRoom: some View {
         timelineScrollView
             .overlay(alignment: .bottom) {
-                ChatInputView(room: room, timeline: timeline.timeline, replyTo: $timeline.sendReplyTo)
+                ChatInputView(room: room.room, timeline: timeline.timeline, replyTo: $timeline.sendReplyTo)
             }
             .background(Color(NSColor.controlBackgroundColor))
-            .navigationTitle(room.displayName() ?? "Unknown room")
+            .navigationTitle(room.room.displayName() ?? "Unknown room")
             .navigationSubtitle(toolbarSubtitle)
             .frame(minWidth: 250, minHeight: 200)
             .onChange(of: timeline.timelineItems) { _, _ in
@@ -152,28 +152,46 @@ struct ChatView: View {
                 do {
                     guard let latest = latestVisibleEvent else { return }
                     guard latest != latestMarkedReadEvent else { return }
+
+                    guard let event = latest.asEvent() else {
+                        Logger.viewCycle.fault("unreachable: latest should be event")
+                        return
+                    }
+
                     try await Task.sleep(for: .seconds(2))
+
                     if latest.uniqueId() == latestVisibleEvent?.uniqueId() {
-                        guard let event = latest.asEvent() else {
-                            Logger.viewCycle.fault("unreachable: latest should be event")
-                            return
+                        if case let .eventId(eventId: eventId) = event.eventOrTransactionId {
+                            try await timeline.timeline?.sendReadReceipt(receiptType: .read, eventId: eventId)
+                        } else {
+                            try await timeline.timeline?.markAsRead(receiptType: .read)
                         }
 
-                        guard let timelineItems = timeline.timelineItems else { return }
+                        /* // there doesn't seem to be an API to mark which event is the latest fully read.
+                         // instead only send the receipt when the latest message has been read
+                         guard let timelineItems = timeline.timelineItems else { return }
+                         let isLaterEvents = timelineItems.contains(where: {
+                             if let e = $0.asEvent() { e.date > event.date } else { false }
+                         })
 
-                        // there doesn't seem to be an API to mark which event is the latest fully read.
-                        // instead only send the receipt when the latest message has been read
-                        let isLaterEvents = timelineItems.contains(where: {
-                            if let e = $0.asEvent() { e.date > event.date } else { false }
-                        })
-
-                        if !isLaterEvents {
-                            try await timeline.timeline?.markAsRead(receiptType: .fullyRead)
-                            Logger.viewCycle.info("latest event marked as read: \(latest.id)")
-                            self.latestMarkedReadEvent = latest
-                        }
+                         if !isLaterEvents {
+                             try await timeline.timeline?.markAsRead(receiptType: .fullyRead)
+                             Logger.viewCycle.info("latest event marked as read: \(latest.id)")
+                             self.latestMarkedReadEvent = latest
+                         } */
                     }
                 } catch { /* sleep cancelled */ }
+            }
+            .onDisappear {
+                Task {
+                    guard let timeline = timeline.timeline else { return }
+                    do {
+                        Logger.viewCycle.info("Unfocusing room, marking it as read")
+                        try await timeline.markAsRead(receiptType: .fullyRead)
+                    } catch {
+                        Logger.viewCycle.error("Failed to mark room as read: \(error)")
+                    }
+                }
             }
     }
 
@@ -185,7 +203,7 @@ struct ChatView: View {
         Button("Accept Invite") {
             Task {
                 do {
-                    try await room.join()
+                    try await room.room.join()
                 } catch {
                     Logger.viewCycle.error("failed to join: \(error)")
                 }
@@ -195,8 +213,8 @@ struct ChatView: View {
         Button("Reject Invite") {
             Task {
                 do {
-                    try await room.leave()
-                    try await room.forget()
+                    try await room.room.leave()
+                    try await room.room.forget()
                 } catch {
                     Logger.viewCycle.error("failed to leave room: \(error)")
                 }
@@ -205,7 +223,7 @@ struct ChatView: View {
     }
 
     var body: some View {
-        switch room.membership() {
+        switch room.room.membership() {
         case .joined:
             joinedRoom
         case .invited:

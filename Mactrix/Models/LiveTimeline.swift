@@ -66,7 +66,7 @@ import SwiftUI
             trackReadReceipts: true,
             reportUtds: false
         )
-        timeline = try await room.timelineWithConfiguration(configuration: config)
+        timeline = try await room.room.timelineWithConfiguration(configuration: config)
 
         // Listen to timeline item updates.
         timelineHandle = await timeline?.addListener(listener: self)
@@ -97,11 +97,6 @@ import SwiftUI
             Logger.liveTimeline.warning("could not find item in timeline")
         }
     }
-
-    /*public func focusThread(rootEventId: String) {
-        Logger.liveTimeline.info("focus thread: \(rootEventId)")
-        focusedThreadTimeline = LiveTimeline(room: room, focusThread: rootEventId)
-    }*/
 }
 
 extension LiveTimeline: @MainActor TimelineListener {

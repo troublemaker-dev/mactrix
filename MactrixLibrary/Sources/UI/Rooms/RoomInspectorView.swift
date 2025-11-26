@@ -2,36 +2,12 @@ import Models
 import OSLog
 import SwiftUI
 
-public struct UserProfileRow<Profile: UserProfile>: View {
-    let userProfile: Profile
-    let imageLoader: ImageLoader?
-
-    @State private var image: Image? = nil
-
-    public init(userProfile: Profile, imageLoader: ImageLoader?) {
-        self.userProfile = userProfile
-        self.imageLoader = imageLoader
-    }
-
-    public var body: some View {
-        Label {
-            Text(userProfile.displayName ?? userProfile.userId)
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .help(userProfile.displayName ?? userProfile.userId)
-        } icon: {
-            AvatarImage(avatarUrl: userProfile.avatarUrl, imageLoader: imageLoader, placeholder: { Image(systemName: "person") })
-                .clipShape(Circle())
-        }
-    }
-}
-
 struct RoomInspectorMemberRow<RoomMember: Models.RoomMember>: View {
     let member: RoomMember
     let imageLoader: ImageLoader?
 
     var body: some View {
-        UserProfileRow(userProfile: member, imageLoader: imageLoader)
+        UserProfileRow(profile: member, imageLoader: imageLoader)
     }
 }
 

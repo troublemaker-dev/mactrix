@@ -48,7 +48,7 @@ struct SpaceDisclosureGroup: View {
     }
 
     var joinRoom: (() async throws -> Void)? {
-        if appState.matrixClient?.rooms.contains(where: { $0.id() == space.id }) == false {
+        if appState.matrixClient?.rooms.contains(where: { $0.room.id() == space.id }) == false {
             return {
                 Logger.viewCycle.error("Joining room: \(space.id)")
                 guard let matrixClient = appState.matrixClient else { return }
@@ -61,7 +61,7 @@ struct SpaceDisclosureGroup: View {
     }
 
     var joinedRoom: SidebarRoom? {
-        return appState.matrixClient?.rooms.first(where: { $0.id() == space.id })
+        return appState.matrixClient?.rooms.first(where: { $0.room.id() == space.id })
     }
 
     @ViewBuilder

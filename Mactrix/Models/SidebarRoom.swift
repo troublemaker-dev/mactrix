@@ -3,25 +3,36 @@ import MatrixRustSDK
 import OSLog
 
 @Observable
-public final class SidebarRoom: MatrixRustSDK.Room {
-    var roomInfo: RoomInfo?
-
-    public convenience init(room: MatrixRustSDK.Room) {
-        self.init(unsafeFromRawPointer: room.uniffiClonePointer())
+public final class SidebarRoom: Identifiable {
+    public let room: MatrixRustSDK.Room
+    public var roomInfo: RoomInfo?
+    
+    public var id: String {
+        room.id()
+    }
+    
+    public init(room: MatrixRustSDK.Room) {
+        self.room = room
+        subscribeRoomInfo()
     }
 
-    required init(unsafeFromRawPointer pointer: UnsafeMutableRawPointer) {
-        super.init(unsafeFromRawPointer: pointer)
-        loadRoomInfo()
-    }
-
-    fileprivate func loadRoomInfo() {
+    @ObservationIgnored
+    private var roomInfoHandle: TaskHandle?
+    
+    fileprivate func subscribeRoomInfo() {
         Task {
             do {
-                self.roomInfo = try await self.roomInfo()
+                self.roomInfo = try await self.room.roomInfo()
+                self.roomInfoHandle = room.subscribeToRoomInfoUpdates(listener: self)
             } catch {
                 Logger.viewCycle.error("Failed to load room info: \(error)")
             }
         }
+    }
+}
+
+extension SidebarRoom: MatrixRustSDK.RoomInfoListener {
+    public func call(roomInfo: MatrixRustSDK.RoomInfo) {
+        self.roomInfo = roomInfo
     }
 }

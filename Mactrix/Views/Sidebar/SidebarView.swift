@@ -20,7 +20,7 @@ struct SidebarView: View {
 
     var rooms: [SidebarRoom] {
         (appState.matrixClient?.rooms ?? [])
-            .filter { !$0.isSpace() && $0.roomInfo?.isDirect != true }
+            .filter { !$0.room.isSpace() && $0.roomInfo?.isDirect != true }
     }
 
     var spaces: [SidebarSpaceRoom] {
@@ -39,8 +39,8 @@ struct SidebarView: View {
                 Section("Favorites") {
                     ForEach(favorites) { room in
                         UI.RoomRow(
-                            title: room.displayName() ?? "Unknown room",
-                            avatarUrl: room.avatarUrl(),
+                            title: room.room.displayName() ?? "Unknown room",
+                            avatarUrl: room.room.avatarUrl(),
                             roomInfo: room.roomInfo,
                             imageLoader: appState.matrixClient,
                             joinRoom: nil
@@ -55,8 +55,8 @@ struct SidebarView: View {
             Section("Directs") {
                 ForEach(directs) { room in
                     UI.RoomRow(
-                        title: room.displayName() ?? "Unknown user",
-                        avatarUrl: room.avatarUrl(),
+                        title: room.room.displayName() ?? "Unknown user",
+                        avatarUrl: room.room.avatarUrl(),
                         roomInfo: room.roomInfo,
                         imageLoader: appState.matrixClient,
                         joinRoom: nil
@@ -70,8 +70,8 @@ struct SidebarView: View {
             Section("Rooms") {
                 ForEach(rooms) { room in
                     UI.RoomRow(
-                        title: room.displayName() ?? "Unknown Room",
-                        avatarUrl: room.avatarUrl(),
+                        title: room.room.displayName() ?? "Unknown Room",
+                        avatarUrl: room.room.avatarUrl(),
                         roomInfo: room.roomInfo,
                         imageLoader: appState.matrixClient,
                         joinRoom: nil

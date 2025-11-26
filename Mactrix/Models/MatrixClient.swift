@@ -152,12 +152,14 @@ enum SelectedScreen {
     var roomListService: RoomListService?
     var roomListServiceState: RoomListServiceState?
     var showRoomSyncIndicator: RoomListServiceSyncIndicator?
+    var ignoredUserIds: [String] = []
 
     @ObservationIgnored fileprivate var roomListEntriesHandle: RoomListEntriesWithDynamicAdaptersResult?
     @ObservationIgnored fileprivate var roomListServiceStateHandle: TaskHandle?
     @ObservationIgnored fileprivate var syncIndicatorHandle: TaskHandle?
     @ObservationIgnored fileprivate var syncStateHandle: TaskHandle?
     @ObservationIgnored fileprivate var verificationStateHandle: TaskHandle?
+    @ObservationIgnored fileprivate var ignoredUsersHandle: TaskHandle?
 
     /// The latest session verification request received by another client
     var sessionVerificationRequest: SessionVerificationRequestDetails?
@@ -187,6 +189,9 @@ enum SelectedScreen {
         try await client.getSessionVerificationController().setDelegate(delegate: self)
 
         verificationStateHandle = client.encryption().verificationStateListener(listener: self)
+
+        ignoredUsersHandle = client.subscribeToIgnoredUsers(listener: self)
+        ignoredUserIds = try await client.ignoredUsers()
 
         // Start the sync loop.
         await _syncService.start()
@@ -268,6 +273,56 @@ extension MatrixClient: UI.ImageLoader {
             Logger.matrixClient.error("failed convert matrix media data to Image: \(error) \(imageData)")
             throw error
         }
+    }
+}
+
+extension MatrixClient {
+    struct MatrixClientUserProfileActions: UserProfileActions {
+        let userId: String
+        let matrixClient: MatrixClient
+        let windowState: WindowState
+
+        func sendMessage() async {
+            do {
+                if let room = try matrixClient.client.getDmRoom(userId: userId) {
+                    windowState.selectedRoomId = room.id
+                    return
+                }
+
+                let createRoomParams = CreateRoomParameters(
+                    name: nil, isEncrypted: false, isDirect: true, visibility: .private,
+                    preset: .privateChat, invite: [userId]
+                )
+                let roomId = try await matrixClient.client.createRoom(request: createRoomParams)
+                windowState.selectedRoomId = roomId
+            } catch {
+                Logger.viewCycle.error("failed to get DM room for user \(userId): \(error)")
+            }
+        }
+
+        func shareProfile() {}
+
+        func ignoreUser() async {
+            Logger.viewCycle.info("Ignore user \(userId)")
+            do {
+                try await matrixClient.client.ignoreUser(userId: userId)
+            } catch {
+                Logger.viewCycle.error("failed to ignore user: \(error)")
+            }
+        }
+
+        func unignoreUser() async {
+            Logger.viewCycle.info("Unignore user \(userId)")
+            do {
+                try await matrixClient.client.unignoreUser(userId: userId)
+            } catch {
+                Logger.viewCycle.error("failed to unignore user: \(error)")
+            }
+        }
+    }
+
+    func userProfileActions(for userId: String, windowState: WindowState) -> some UserProfileActions {
+        return MatrixClientUserProfileActions(userId: userId, matrixClient: self, windowState: windowState)
     }
 }
 

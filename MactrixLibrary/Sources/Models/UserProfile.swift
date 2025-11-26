@@ -6,6 +6,20 @@ public protocol UserProfile: Identifiable {
     var avatarUrl: String? { get }
 }
 
-extension UserProfile {
+public extension UserProfile {
     var id: String { userId }
+}
+
+public struct MockUserProfile: UserProfile {
+    public init() {}
+
+    public var userId: String {
+        "@user:matrix.org"
+    }
+
+    public var displayName: String? {
+        "Matrix User"
+    }
+
+    public var avatarUrl: String? { nil }
 }
