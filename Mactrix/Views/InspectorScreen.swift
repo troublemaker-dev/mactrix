@@ -31,9 +31,7 @@ struct InspectorScreen: View {
             switch windowState.selectedScreen {
             case let .joinedRoom(timeline: timeline):
                 UI.RoomInspectorView(room: timeline.room, members: timeline.room.fetchedMembers, roomInfo: timeline.room.roomInfo, imageLoader: appState.matrixClient, inspectorVisible: $windowState.inspectorVisible)
-            // case let .previewRoom(room):
-            //    Text("Preview room: \(room.info().name ?? "unknown name")")
-            case .none, .newRoom, .previewRoom:
+            case .none, .newRoom, .previewRoom, .loadMatrixUrl(_), .user(profile:_):
                 Text("No room selected")
                     .inspectorColumnWidth(min: 200, ideal: 250, max: nil)
             }
@@ -82,7 +80,7 @@ struct InspectorUserInfo: View {
             UI.UserProfileView(
                 profile: profile,
                 isUserIgnored: isUserIgnored,
-                actions: appState.matrixClient?.userProfileActions(for: userId, windowState: windowState),
+                actions: appState.matrixClient?.userProfileActions(forUserId: userId, windowState: windowState),
                 timelineActions: nil,
                 imageLoader: appState.matrixClient
             )

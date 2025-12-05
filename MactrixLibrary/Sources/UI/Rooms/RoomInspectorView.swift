@@ -39,6 +39,38 @@ public struct RoomInspectorView<Room: Models.Room, RoomMember: Models.RoomMember
     }
 
     @ViewBuilder
+    var header: some View {
+        VStack(alignment: .center, spacing: 20) {
+            VStack(alignment: .center) {
+                AvatarImage(avatarUrl: roomInfo?.avatarUrl, imageLoader: imageLoader)
+                    .frame(width: 72, height: 72)
+                    .clipShape(.circle)
+
+                Text(room.displayName ?? "Unknown room")
+                    .font(.title)
+                    .textSelection(.enabled)
+
+                if let alias = roomInfo?.canonicalAlias {
+                    Text(alias)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
+            }
+
+            RoomEncryptionBadge(state: room.encryptionState)
+
+            if let topic = room.topic {
+                Text(topic.formatAsMarkdown)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .multilineTextAlignment(.leading)
+                    .textSelection(.enabled)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .listRowSeparator(.hidden)
+    }
+
+    @ViewBuilder
     var usersPlaceholder: some View {
         Group {
             Section("Admins (2)") {
@@ -58,18 +90,7 @@ public struct RoomInspectorView<Room: Models.Room, RoomMember: Models.RoomMember
 
     public var body: some View {
         List {
-            VStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(room.displayName ?? "Unknown Room").font(.title)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text((room.topic ?? "No Topic").formatAsMarkdown)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                RoomEncryptionBadge(state: room.encryptionState)
-            }
-            .frame(maxWidth: .infinity)
-            .listRowSeparator(.hidden)
+            header
 
             if let members = members {
                 userSection(title: "Admins", allMembers: members, withRole: .administrator)

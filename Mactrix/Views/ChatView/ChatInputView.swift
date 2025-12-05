@@ -6,6 +6,7 @@ struct ChatInputView: View {
     let room: Room
     let timeline: Timeline?
     @Binding var replyTo: MatrixRustSDK.EventTimelineItem?
+    @Binding var height: CGFloat?
 
     @State private var chatInput: String = ""
     @FocusState private var chatFocused: Bool
@@ -55,7 +56,15 @@ struct ChatInputView: View {
                 .padding(10)
         }
         .font(.system(size: 14))
-        .background(Color(NSColor.textBackgroundColor))
+        .background(
+            GeometryReader { proxy in
+                Color(NSColor.textBackgroundColor)
+                    .onChange(of: proxy.size.height) { _, inputHeight in
+                        print("Input height: \(inputHeight)")
+                        self.height = inputHeight
+                    }
+            }
+        )
         .cornerRadius(4)
         .lineSpacing(2)
         .frame(minHeight: 20)

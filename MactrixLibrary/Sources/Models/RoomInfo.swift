@@ -120,7 +120,7 @@ public struct MockRoomInfo: RoomInfo {
 
     public var isFavourite: Bool { false }
 
-    public var canonicalAlias: String? { nil }
+    public var canonicalAlias: String? { "#room:matrix.org" }
 
     public var alternativeAliases: [String] { [] }
 

@@ -14,14 +14,14 @@ struct TimelineEventView: View {
             UI.GenericEventView(event: event, name: "Call invite")
         case .rtcNotification:
             UI.GenericEventView(event: event, name: "Rtc notification")
-        case let .roomMembership(userId: _, userDisplayName: _, change: change, reason: reason):
+        case let .roomMembership(userId: user, userDisplayName: _, change: change, reason: reason):
             let changeMsg = switch change {
             case nil:
                 "unknown membership change event"
             case .some(.none):
                 "room membership event was none"
             case .banned:
-                "was banned from the room"
+                "banned \(user)"
             case .error:
                 "room membership event error"
             case .joined:
@@ -29,27 +29,27 @@ struct TimelineEventView: View {
             case .left:
                 "left the room"
             case .unbanned:
-                "was unbanned from the room"
+                "unbanned \(user)"
             case .kicked:
-                "was kicked from the room"
+                "kicked \(user)"
             case .invited:
-                "was invited"
+                "invited \(user)"
             case .kickedAndBanned:
-                "was kicked and banned from the room"
+                "kicked and banned \(user)"
             case .invitationAccepted:
                 "accepted invitiation to join the room"
             case .invitationRejected:
                 "rejected invitiation to join the room"
             case .invitationRevoked:
-                "invitiation to join the room was revoked"
+                "revoked invitiation for \(user) to join the room"
             case .knocked:
                 "requested to join the room"
             case .knockAccepted:
-                "request to join the room accepted"
+                "accepted join request from \(user)"
             case .knockRetracted:
                 "request to join the room was retracted"
             case .knockDenied:
-                "request to join the room denied"
+                "denied join request from \(user)"
             case .notImplemented:
                 "room membership event not implemented"
             }

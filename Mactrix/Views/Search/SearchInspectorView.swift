@@ -73,7 +73,7 @@ struct SearchInspectorView: View {
             UI.UserProfileView(
                 profile: userProfile,
                 isUserIgnored: appState.matrixClient?.isUserIgnored(userProfile.userId) == true,
-                actions: appState.matrixClient?.userProfileActions(for: userProfile.userId, windowState: windowState),
+                actions: appState.matrixClient?.userProfileActions(forUserId: userProfile.userId, windowState: windowState),
                 timelineActions: nil,
                 imageLoader: appState.matrixClient
             )

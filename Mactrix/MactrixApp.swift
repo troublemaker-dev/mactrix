@@ -1,11 +1,10 @@
-import SwiftUI
 import OSLog
+import SwiftUI
 
 let applicationID = "dk.qpqp.mactrix"
 
 @main
 struct MactrixApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State var appState = AppState()
 
     var body: some Scene {

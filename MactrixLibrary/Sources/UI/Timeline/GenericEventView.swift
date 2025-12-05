@@ -17,7 +17,8 @@ public struct GenericEventView: View {
             MessageTimestampView(date: event.date, hover: hover)
             Text("\(Text(event.sender).bold()): \(Text(name).italic())")
                 .textSelection(.enabled)
-            Spacer()
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 10)
         .onHover { hover in

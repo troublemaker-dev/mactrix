@@ -27,7 +27,8 @@ public struct RoomEncryptionBadge: View {
 
     public var body: some View {
         Label(badge.label, systemImage: badge.icon)
-            .padding(.vertical, 8)
+            .font(.subheadline.bold())
+            .padding(.vertical, 6)
             .padding(.horizontal, 10)
             .foregroundStyle(badge.color.mix(with: .black, by: 0.1))
             .background(
@@ -35,7 +36,6 @@ public struct RoomEncryptionBadge: View {
                     .fill(badge.color.quaternary)
                 // .stroke(badge.color.secondary)
             )
-            .padding()
     }
 }
 

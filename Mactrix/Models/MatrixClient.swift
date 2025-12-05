@@ -5,6 +5,7 @@ import OSLog
 import SwiftUI
 import UI
 import UniformTypeIdentifiers
+import Utils
 
 struct UserSession: Codable {
     let accessToken: String
@@ -58,7 +59,9 @@ struct UserSession: Codable {
 
 enum SelectedScreen {
     case joinedRoom(timeline: LiveTimeline)
+    case loadMatrixUrl(_ url: Utils.MatrixUriScheme)
     case previewRoom(_ room: RoomPreview)
+    case user(profile: UserProfile)
     case newRoom
     case none
 }
@@ -325,7 +328,7 @@ extension MatrixClient {
         }
     }
 
-    func userProfileActions(for userId: String, windowState: WindowState) -> some UserProfileActions {
+    func userProfileActions(forUserId userId: String, windowState: WindowState) -> some UserProfileActions {
         return MatrixClientUserProfileActions(userId: userId, matrixClient: self, windowState: windowState)
     }
 }

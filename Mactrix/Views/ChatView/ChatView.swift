@@ -35,6 +35,7 @@ struct ChatView: View {
     @State private var scrollAtBottom: Bool = true
     @State private var latestVisibleEvent: MatrixRustSDK.TimelineItem? = nil
     @State private var latestMarkedReadEvent: MatrixRustSDK.TimelineItem? = nil
+    @State private var inputHeight: CGFloat?
 
     func loadMoreMessages() {
         guard scrollNearTop else { return }
@@ -90,7 +91,7 @@ struct ChatView: View {
         }
         .scrollPosition($timeline.scrollPosition)
         .defaultScrollAnchor(.bottom)
-        .safeAreaPadding(.bottom, 60) // chat input overlay
+        .safeAreaPadding(.bottom, inputHeight ?? 60) // chat input overlay
         .onScrollGeometryChange(for: Bool.self) { geo in
             geo.visibleRect.maxY - geo.containerSize.height < 400.0
         } action: { _, nearTop in
@@ -126,7 +127,7 @@ struct ChatView: View {
 
     var toolbarSubtitle: String {
         guard let topic = room.room.topic() else { return "" }
-        let firstLine = topic.split(separator: "\n").first ?? ""
+        let firstLine = topic.split(whereSeparator: \.isNewline).first ?? ""
         return String(firstLine)
     }
 
@@ -134,7 +135,7 @@ struct ChatView: View {
     var joinedRoom: some View {
         timelineScrollView
             .overlay(alignment: .bottom) {
-                ChatInputView(room: room.room, timeline: timeline.timeline, replyTo: $timeline.sendReplyTo)
+                ChatInputView(room: room.room, timeline: timeline.timeline, replyTo: $timeline.sendReplyTo, height: $inputHeight)
             }
             .background(Color(NSColor.controlBackgroundColor))
             .navigationTitle(room.room.displayName() ?? "Unknown room")

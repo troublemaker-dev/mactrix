@@ -148,7 +148,7 @@ public struct MessageEventView<MessageView: View, EventTimelineItem: Models.Even
 
                         Text(name)
                             .fontWeight(.bold)
-                        Spacer()
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .buttonStyle(.plain)
@@ -157,7 +157,7 @@ public struct MessageEventView<MessageView: View, EventTimelineItem: Models.Even
                 HStack(alignment: .top, spacing: 0) {
                     MessageTimestampView(date: event.date, hover: hoverText)
                     message
-                    Spacer()
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 4)

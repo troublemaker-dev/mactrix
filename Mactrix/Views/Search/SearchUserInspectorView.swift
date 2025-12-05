@@ -11,17 +11,6 @@ struct SearchUserInspectorView: View {
     @State var searching: Bool = false
     @State var userListSelection: String? = nil
 
-    @ViewBuilder
-    func popover(forUser user: UserProfile) -> some View {
-        UI.UserProfileView(
-            profile: user,
-            isUserIgnored: appState.matrixClient?.isUserIgnored(user.userId) == true,
-            actions: appState.matrixClient?.userProfileActions(for: user.userId, windowState: windowState),
-            timelineActions: nil,
-            imageLoader: appState.matrixClient
-        )
-    }
-
     var body: some View {
         List(selection: $userListSelection) {
             Section("User search results") {
@@ -34,17 +23,13 @@ struct SearchUserInspectorView: View {
                 } else {
                     ForEach(searchedUsers) { user in
                         UI.UserProfileRow(profile: user, imageLoader: appState.matrixClient)
-                            .popover(
-                                isPresented: Binding(
-                                    get: { userListSelection == user.id },
-                                    set: { _ in userListSelection = nil }
-                                ),
-                                arrowEdge: .leading
-                            ) {
-                                popover(forUser: user)
-                            }
                     }
                 }
+            }
+        }
+        .onChange(of: userListSelection) { _, selectedUserId in
+            if let user = searchedUsers.first(where: { $0.id == selectedUserId }) {
+                windowState.selectedScreen = .user(profile: user)
             }
         }
         .task(id: windowState.searchQuery) {

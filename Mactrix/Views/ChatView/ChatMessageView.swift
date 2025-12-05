@@ -67,7 +67,7 @@ struct ChatMessageView: View, UI.MessageEventActions {
             case let .video(content: content):
                 Text("Video: \(content.caption ?? "no caption") \(content.filename)").textSelection(.enabled)
             case let .file(content: content):
-                Text("File: \(content.caption ?? "no caption") \(content.filename)").textSelection(.enabled)
+                MessageFileView(content: content)
             case let .gallery(content: content):
                 Text("Gallery: \(content.body)").textSelection(.enabled)
             case let .notice(content: content):
@@ -93,8 +93,59 @@ struct ChatMessageView: View, UI.MessageEventActions {
                 .italic()
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
-        case .other(eventType: _):
-            Text("Custom event").textSelection(.enabled)
+        case let .other(eventType: eventType):
+            let eventText = switch eventType {
+            case .callAnswer:
+                "call answer"
+            case .callCandidates:
+                "call candidates"
+            case .callHangup:
+                "call hangup"
+            case .callInvite:
+                "call invite"
+            case .rtcNotification:
+                "rtc notification"
+            case .keyVerificationAccept:
+                "key verification accept"
+            case .keyVerificationCancel:
+                "key verification cancel"
+            case .keyVerificationDone:
+                "key verification done"
+            case .keyVerificationKey:
+                "key verification key"
+            case .keyVerificationMac:
+                "key verification mac"
+            case .keyVerificationReady:
+                "key verification ready"
+            case .keyVerificationStart:
+                "key verification start"
+            case .pollEnd:
+                "poll end"
+            case .pollResponse:
+                "poll reponse"
+            case .pollStart:
+                "poll start"
+            case .reaction:
+                "reaction"
+            case .roomEncrypted:
+                "room encrypted"
+            case .roomMessage:
+                "room message"
+            case .roomRedaction:
+                "room redaction"
+            case .sticker:
+                "sticker"
+            case .unstablePollEnd:
+                "unstable poll end"
+            case .unstablePollResponse:
+                "unstable poll response"
+            case .unstablePollStart:
+                "unstable poll start"
+            case let .other(other):
+                other
+            }
+
+            Text("Custom event: \(eventText)").textSelection(.enabled)
         }
     }
 
