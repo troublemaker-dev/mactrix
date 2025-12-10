@@ -4,7 +4,7 @@ import SwiftUI
 
 struct ChatInputView: View {
     let room: Room
-    let timeline: Timeline?
+    let timeline: LiveTimeline
     @Binding var replyTo: MatrixRustSDK.EventTimelineItem?
     @Binding var height: CGFloat?
 
@@ -13,16 +13,16 @@ struct ChatInputView: View {
 
     func sendMessage() {
         guard !chatInput.isEmpty else { return }
-        guard let timeline = timeline else { return }
+        guard let innerTimeline = timeline.timeline else { return }
 
         Task {
             let msg = messageEventContentFromMarkdown(md: chatInput)
 
             do {
                 if let replyTo {
-                    let _ = try await timeline.sendReply(msg: msg, eventId: replyTo.eventOrTransactionId.id)
+                    let _ = try await innerTimeline.sendReply(msg: msg, eventId: replyTo.eventOrTransactionId.id)
                 } else {
-                    let _ = try await timeline.send(msg: msg)
+                    let _ = try await innerTimeline.send(msg: msg)
                 }
             } catch {
                 Logger.viewCycle.error("failed to send message: \(error)")
@@ -30,6 +30,7 @@ struct ChatInputView: View {
 
             chatInput = ""
             replyTo = nil
+            timeline.scrollPosition.scrollTo(edge: .bottom)
         }
     }
 

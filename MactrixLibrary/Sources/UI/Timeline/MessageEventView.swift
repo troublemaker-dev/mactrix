@@ -131,7 +131,7 @@ public struct MessageEventView<MessageView: View, EventTimelineItem: Models.Even
     }
 
     func reactionIsActive(_ reaction: Reaction) -> Bool {
-        return event.isOwn && reaction.senders.contains(where: { $0.senderId == event.sender })
+        return reaction.senders.contains(where: { $0.senderId == event.sender })
     }
 
     public var body: some View {

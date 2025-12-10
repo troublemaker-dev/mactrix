@@ -103,7 +103,8 @@ extension LiveTimeline: TimelineListener {
     public nonisolated func onUpdate(diff: [TimelineDiff]) {
         Task { @MainActor in
             let oldView = scrollPosition.viewID
-            Logger.liveTimeline.trace("onUpdate old view \(oldView.debugDescription)")
+            let oldEdge = scrollPosition.edge
+            Logger.liveTimeline.trace("onUpdate old view \(oldView.debugDescription) \(oldEdge.debugDescription)")
 
             for update in diff {
                 switch update {
@@ -132,7 +133,9 @@ extension LiveTimeline: TimelineListener {
                 }
             }
 
-            if let oldView {
+            if let oldEdge {
+                scrollPosition.scrollTo(edge: oldEdge)
+            } else if let oldView {
                 scrollPosition.scrollTo(id: oldView, anchor: .top)
             }
         }

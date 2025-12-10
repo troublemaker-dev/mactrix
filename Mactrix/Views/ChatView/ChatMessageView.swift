@@ -21,8 +21,10 @@ struct ChatMessageView: View, UI.MessageEventActions {
 
     func toggleReaction(key: String) {
         Task {
+            guard let innerTimeline = timeline.timeline else { return }
             do {
-                let _ = try await timeline.timeline?.toggleReaction(itemId: event.eventOrTransactionId, key: key)
+                let reactionWasAdded = try await innerTimeline.toggleReaction(itemId: event.eventOrTransactionId, key: key)
+                Logger.viewCycle.debug("reaction \(reactionWasAdded ? "added" : "removed"): \(key)")
             } catch {
                 Logger.viewCycle.error("Failed to toggle reaction: \(error)")
             }

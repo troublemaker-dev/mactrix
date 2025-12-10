@@ -14,7 +14,7 @@ public protocol ReactionSenderData {
 
 public struct MockReactionSenderData: ReactionSenderData {
     public var senderId: String {
-        "sender@id"
+        "sender@address"
     }
 
     public var date: Date {

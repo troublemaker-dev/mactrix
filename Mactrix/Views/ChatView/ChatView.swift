@@ -4,20 +4,6 @@ import OSLog
 import SwiftUI
 import UI
 
-struct TimelineItemView: View {
-    let timeline: LiveTimeline
-    let item: TimelineItem
-
-    var body: some View {
-        if let event = item.asEvent() {
-            TimelineEventView(timeline: timeline, event: event)
-        }
-        if let virtual = item.asVirtual() {
-            UI.VirtualItemView(item: virtual.asModel)
-        }
-    }
-}
-
 struct ChatView: View {
     @Environment(AppState.self) private var appState
 
@@ -61,7 +47,12 @@ struct ChatView: View {
         if let timelineItems = timeline.timelineItems {
             LazyVStack {
                 ForEach(timelineItems) { item in
-                    TimelineItemView(timeline: timeline, item: item)
+                    if let event = item.asEvent() {
+                        TimelineEventView(timeline: timeline, event: event)
+                    }
+                    if let virtual = item.asVirtual() {
+                        UI.VirtualItemView(item: virtual.asModel)
+                    }
                 }
             }
             .scrollTargetLayout()
@@ -135,7 +126,7 @@ struct ChatView: View {
     var joinedRoom: some View {
         timelineScrollView
             .overlay(alignment: .bottom) {
-                ChatInputView(room: room.room, timeline: timeline.timeline, replyTo: $timeline.sendReplyTo, height: $inputHeight)
+                ChatInputView(room: room.room, timeline: timeline, replyTo: $timeline.sendReplyTo, height: $inputHeight)
             }
             .background(Color(NSColor.controlBackgroundColor))
             .navigationTitle(room.room.displayName() ?? "Unknown room")
@@ -154,20 +145,22 @@ struct ChatView: View {
                     guard let latest = latestVisibleEvent else { return }
                     guard latest != latestMarkedReadEvent else { return }
 
-                    guard let event = latest.asEvent() else {
-                        Logger.viewCycle.fault("unreachable: latest should be event")
-                        return
-                    }
+                    /* guard let event = latest.asEvent() else {
+                         Logger.viewCycle.fault("unreachable: latest should be event")
+                         return
+                     } */
 
-                    try await Task.sleep(for: .seconds(2))
+                    try await Task.sleep(for: .seconds(1))
 
-                    if latest.uniqueId() == latestVisibleEvent?.uniqueId() {
-                        if case let .eventId(eventId: eventId) = event.eventOrTransactionId {
-                            try await timeline.timeline?.sendReadReceipt(receiptType: .read, eventId: eventId)
-                        } else {
-                            try await timeline.timeline?.markAsRead(receiptType: .read)
-                        }
-                    }
+                    try await timeline.timeline?.markAsRead(receiptType: .read)
+
+                    /* if latest.uniqueId() == latestVisibleEvent?.uniqueId() {
+                         if case let .eventId(eventId: eventId) = event.eventOrTransactionId {
+                             try await timeline.timeline?.sendReadReceipt(receiptType: .read, eventId: eventId)
+                         } else {
+                             try await timeline.timeline?.markAsRead(receiptType: .read)
+                         }
+                     } */
                 } catch is CancellationError {
                     /* sleep cancelled */
                 } catch {
