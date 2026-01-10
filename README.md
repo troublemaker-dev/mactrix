@@ -22,8 +22,8 @@ Xcode will automatically download all dependencies when building the project for
 ### Building
 
 ```bash
-git clone https://github.com/yourusername/Mactrix.git
-cd Mactrix
+git clone https://github.com/viktorstrate/mactrix.git
+cd mactrix
 xed .
 ```
 
@@ -88,6 +88,7 @@ Then open the project in Xcode and build using `Cmd+B`.
 - [ ] Notifications
   - [x] Message notification
   - [ ] Verify session notification
+- [x] Multiple windows and tabs
 - [ ] Navigation: forwards and backwards button
 - [x] Support matrix URLs
 - [ ] Keyboard navigation and accessibility
